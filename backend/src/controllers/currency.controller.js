@@ -16,5 +16,17 @@ const saveRate = async (req, res) => {
   }
 };
 
-
 module.exports = { saveRate };
+
+const getRates = async (req, res) => {
+  try {
+    const rates = await CurrencyRate.find().sort({ timestamp: -1 });
+    res.status(200).json(rates);
+  } catch (error) {
+    console.error('❌ Error fetching rates:', error);
+    res.status(500).json({ message: 'Failed to fetch rates', error: error.message });
+  }
+};
+
+module.exports = { saveRate, getRates };
+
