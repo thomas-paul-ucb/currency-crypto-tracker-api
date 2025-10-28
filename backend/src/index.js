@@ -23,8 +23,10 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-// other code stays same...
-
 // Import and use modular routes
 const currencyRoutes = require('./routes/currency.routes');
 app.use('/api', currencyRoutes);
+
+const cryptoRoutes = require('./routes/crypto.routes');
+app.use('/api', cryptoRoutes);
+
