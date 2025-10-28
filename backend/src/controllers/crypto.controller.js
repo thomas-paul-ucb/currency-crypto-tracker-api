@@ -16,12 +16,19 @@ const saveCrypto = async (req, res) => {
 
 const getCryptos = async (req, res) => {
   try {
-    const cryptos = await Crypto.find().sort({ timestamp: -1 });
+    const { symbol, name } = req.query;
+
+    const filter = {};
+    if (symbol) filter.symbol = new RegExp(symbol, 'i'); // case-insensitive
+    if (name) filter.name = new RegExp(name, 'i');
+
+    const cryptos = await Crypto.find(filter).sort({ timestamp: -1 });
     res.status(200).json(cryptos);
   } catch (error) {
     console.error('❌ Error fetching cryptos:', error);
     res.status(500).json({ message: 'Failed to fetch cryptos', error: error.message });
   }
 };
+
 
 module.exports = { saveCrypto, getCryptos };

@@ -20,7 +20,13 @@ module.exports = { saveRate };
 
 const getRates = async (req, res) => {
   try {
-    const rates = await CurrencyRate.find().sort({ timestamp: -1 });
+    const { base, target } = req.query;
+
+    const filter = {};
+    if (base) filter.base = base.toUpperCase();
+    if (target) filter.target = target.toUpperCase();
+
+    const rates = await CurrencyRate.find(filter).sort({ timestamp: -1 });
     res.status(200).json(rates);
   } catch (error) {
     console.error('❌ Error fetching rates:', error);
