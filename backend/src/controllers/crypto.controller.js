@@ -30,5 +30,36 @@ const getCryptos = async (req, res) => {
   }
 };
 
+const axios = require('axios');
 
-module.exports = { saveCrypto, getCryptos };
+const getLiveCrypto = async (req, res) => {
+  const { symbol = 'btc' } = req.query;
+
+  try {
+    const response = await axios.get(`https://api.coingecko.com/api/v3/simple/price`, {
+      params: {
+        ids: symbol.toLowerCase(),
+        vs_currencies: 'usd'
+      }
+    });
+
+    const price = response.data[symbol.toLowerCase()]?.usd;
+
+    if (!price) {
+      return res.status(404).json({ message: 'Crypto not found or invalid symbol' });
+    }
+
+    res.status(200).json({
+      name: symbol.toUpperCase(),
+      priceUsd: price,
+      source: 'CoinGecko',
+      fetchedAt: new Date()
+    });
+  } catch (error) {
+    console.error('❌ Error fetching live price:', error.message);
+    res.status(500).json({ message: 'Failed to fetch live price', error: error.message });
+  }
+};
+
+
+module.exports = { saveCrypto, getCryptos, getLiveCrypto };
