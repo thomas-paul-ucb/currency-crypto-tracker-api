@@ -33,9 +33,10 @@ const getCryptos = async (req, res) => {
 const axios = require('axios');
 
 const getLiveCrypto = async (req, res) => {
-  const { symbol = 'btc' } = req.query;
+  const { symbol = 'bitcoin' } = req.query;
 
   try {
+    // 1. Fetch live price from CoinGecko
     const response = await axios.get(`https://api.coingecko.com/api/v3/simple/price`, {
       params: {
         ids: symbol.toLowerCase(),
@@ -49,17 +50,32 @@ const getLiveCrypto = async (req, res) => {
       return res.status(404).json({ message: 'Crypto not found or invalid symbol' });
     }
 
-    res.status(200).json({
+    // 2. Save to MongoDB
+    const saved = new Crypto({
       name: symbol.toUpperCase(),
-      priceUsd: price,
-      source: 'CoinGecko',
-      fetchedAt: new Date()
+      symbol: symbol.toLowerCase(),
+      priceUsd: price
     });
+
+    await saved.save();
+
+    // 3. Respond with success message
+    res.status(201).json({
+      message: 'Fetched and saved successfully',
+      data: {
+        name: saved.name,
+        symbol: saved.symbol,
+        priceUsd: saved.priceUsd,
+        timestamp: saved.timestamp
+      }
+    });
+
   } catch (error) {
-    console.error('❌ Error fetching live price:', error.message);
-    res.status(500).json({ message: 'Failed to fetch live price', error: error.message });
+    console.error('❌ Error in getLiveCrypto:', error.message);
+    res.status(500).json({ message: 'Failed to fetch or save', error: error.message });
   }
 };
+
 
 
 module.exports = { saveCrypto, getCryptos, getLiveCrypto };
